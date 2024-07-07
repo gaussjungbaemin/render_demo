@@ -368,7 +368,7 @@ app.title = "Market Alert Summary"
 
 
 # bar chart용 데이터셋 만들기
-bar_data = alert_list[alert_list['지정일'].isin(list(alert_list['지정일'].unique())[:10])]
+bar_data = alert_list[alert_list['지정일'].isin(list(alert_list['지정일'].unique())[:30])]
 df = bar_data.pivot_table(index='시장경보', columns='지정일', values='종목코드', aggfunc='count').fillna(0)
 tmp = ['투자주의종목','투자경고종목','투자위험종목']
 tmp2 = list(df.index)
@@ -380,7 +380,7 @@ bar_data2=result.loc[tmp]
 bar_data2 = bar_data2.stack().reset_index()
 bar_data2.columns=['시장경보', '지정일', '지정건수']
 
-fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#fcc603", "#fc5603", "#fc0303"],)
+fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["3333FF", "#FF3333", "33FF6E"],)
 fig.update_layout(
   # title=dict(text = ' <b> 일별 시장경보 지정현황 </b>', x=0.5, font=dict(family='Courier New', size=20, color='black')),
   # legend=dict(orientation='v', xanchor='left', x=0.01, yanchor='bottom', y=0.9, font=dict(family='Courier New', size=14, color='black')),
