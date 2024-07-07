@@ -412,7 +412,7 @@ app.layout = html.Div([html.Div([
     html.H1('일별 시장경보지정 현황'),
     html.Div([
         html.Div([
-            html.H3('금일('+datetime.datetime.now().strftime("%Y/%m/%d")+ ') 시장경보 종목 현황'),
+            html.H3(datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 현황'),
             # html.Br(),
             dcc.Graph(
                 id='graph',
@@ -422,7 +422,7 @@ app.layout = html.Div([html.Div([
         style={'padding': 10, 'flex': 1}),
 
         html.Div(children=[
-        html.H3('금일 시장경보 종목'),
+        html.H3(datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 list'),
         html.Br(),
         dcc.Dropdown(
         id = 'category',
@@ -449,7 +449,7 @@ app.layout = html.Div([html.Div([
   ]),
   html.Div([html.H1('시장경보지정 전/후 주가변동률'),
             html.Div([
-            html.H3('금일('+datetime.datetime.now().strftime("%Y/%m/%d")+ ') 시장경보 종목 현황'),
+            html.H3('일별 시장경보 종목 현황'),
             # html.Br(),
             dcc.Graph(
                 id='graph',
