@@ -476,4 +476,4 @@ def temp(category):
   return filtered_data.to_dict('records')
 
 
-app.run(jupyter_mode="external",host="0.0.0.0", port=8080)
+app.run(jupyter_mode="external")
