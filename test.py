@@ -359,7 +359,6 @@ final_result = pd.concat([tmp_df.iloc[:,:5],(tmp_df.iloc[:,5:].diff(axis=1)/tmp_
 
 
 
-
 app = Dash(__name__)
 server = app.server
 
@@ -423,12 +422,14 @@ dfff4.columns = ['시장경보','시장구분','날짜','종가변동률_평균'
 
 
 df = px.data.gapminder().query("continent == 'Oceania'")
-fi3 = px.line(dfff4, x='날짜', y='종가변동률_평균', color='시장경보', facet_row='시장구분', markers=True, title='시장경보 지정 전/후 일별 종가변동률')
+fig3 = px.line(dfff4, x='날짜', y='종가변동률_평균', color='시장경보', facet_row='시장구분', markers=True,
+              #  title='시장경보 지정 전/후 일별 종가변동률'
+               )
 
 
 
 app.layout = html.Div([html.Div([
-    html.H1('일별 시장경보지정 현황'),
+    html.H1('시장경보조치 현황'),
     html.Div([
         html.Div([
             html.H3(datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 현황'),
@@ -464,9 +465,10 @@ app.layout = html.Div([html.Div([
               'minHeight': '100vh',  # Ensure full viewport height
               # 'alignItems': 'center',  # Center content vertically
               'padding': '20px',
-    })
-  ]),
-  html.Div([html.H1('시장경보지정 전/후 주가변동률'),
+    }),
+
+    html.H1('시장경보 관련 통계'),
+    html.Div([
             html.Div([
             html.H3('일별 시장경보 종목 현황'),
             # html.Br(),
@@ -475,16 +477,30 @@ app.layout = html.Div([html.Div([
                 figure=fig
               )
             ],
+            style={'padding': 10, 'flex': 1}),
+            html.Div([
+            html.H3('시장경보 전/후 종가변동률'),
+            # html.Br(),
+            dcc.Graph(
+                id='graph',
+                figure=fig3
+              )
+            ],
             style={'padding': 10, 'flex': 1})],
-              style={'display': 'flex', 'flexDirection': 'column',
+            
+            
+            style={'display': 'flex', 'flexDirection': 'row',
                   # 'backgroundColor': '#333333',
                   'minHeight': '100vh',  # Ensure full viewport height
                   # 'alignItems': 'center',  # Center content vertically
                   'padding': '20px',
     })
+  ])
+
 
 
 ])
+
 
 
 @app.callback(Output("df_list", "data"), Input('category','value'))
