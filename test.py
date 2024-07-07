@@ -350,6 +350,7 @@ for i in range(filter_alert_list.shape[0]):
   # print(tmp_df)
 
 
+final_result = pd.concat([tmp_df.iloc[:,:5],(tmp_df.iloc[:,5:].diff(axis=1)/tmp_df.iloc[:,5:].shift(1,axis=1)*100).iloc[:,1:]], axis=1)
 
 ##############################################################################################################
 
@@ -380,7 +381,7 @@ bar_data2=result.loc[tmp]
 bar_data2 = bar_data2.stack().reset_index()
 bar_data2.columns=['시장경보', '지정일', '지정건수']
 
-fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["3333FF", "#FF3333", "33FF6E"],)
+fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#0317fc", "#fc0303", "#03fc56"],)
 fig.update_layout(
   # title=dict(text = ' <b> 일별 시장경보 지정현황 </b>', x=0.5, font=dict(family='Courier New', size=20, color='black')),
   # legend=dict(orientation='v', xanchor='left', x=0.01, yanchor='bottom', y=0.9, font=dict(family='Courier New', size=14, color='black')),
@@ -407,6 +408,24 @@ fig2.update_layout(
   # paper_bgcolor='#171b26', # 차트 바깥쪽 배경색
   # plot_bgcolor='#171b26'
 )
+
+
+# 시장별 주가변동률
+dfff = final_result[['시장경보','시장구분','D-15','D-14','D-13','D-12','D-11','D-10','D-9','D-8','D-7','D-6','D-5','D-4','D-3','D-2','D-1','D-0','D+1','D+2','D+3','D+4','D+5','D+6','D+7','D+8','D+9','D+10','D+11','D+12','D+13','D+14','D+15']]
+
+dfff2 = dfff.dropna().groupby(['시장경보','시장구분']).mean()
+
+dfff3=dfff2.transpose()
+
+dfff4 = pd.DataFrame(dfff2.stack()).reset_index()
+dfff4.columns = ['시장경보','시장구분','날짜','종가변동률_평균']
+
+
+
+df = px.data.gapminder().query("continent == 'Oceania'")
+fi3 = px.line(dfff4, x='날짜', y='종가변동률_평균', color='시장경보', facet_row='시장구분', markers=True, title='시장경보 지정 전/후 일별 종가변동률')
+
+
 
 app.layout = html.Div([html.Div([
     html.H1('일별 시장경보지정 현황'),
