@@ -360,7 +360,7 @@ for i in range(filter_alert_list.shape[0]):
 
 
 app = Dash(__name__)
-
+server = app.server
 
 
 
