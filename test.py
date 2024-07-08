@@ -368,7 +368,7 @@ app.title = "Market Alert Summary"
 
 
 # bar chart용 데이터셋 만들기
-bar_data = alert_list[alert_list['지정일'].isin(list(alert_list['지정일'].unique())[:30])]
+bar_data = alert_list[alert_list['지정일'].isin(list(alert_list['지정일'].unique())[:60])]
 df = bar_data.pivot_table(index='시장경보', columns='지정일', values='종목코드', aggfunc='count').fillna(0)
 tmp = ['투자주의종목','투자경고종목','투자위험종목']
 tmp2 = list(df.index)
@@ -382,7 +382,7 @@ bar_data2.columns=['시장경보', '지정일', '지정건수']
 
 fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#0317fc", "#fc0303", "#03fc56"],)
 fig.update_layout(
-  # title=dict(text = ' <b> 일별 시장경보 지정현황 </b>', x=0.5, font=dict(family='Courier New', size=20, color='black')),
+  title=dict(text = ' <b> 최근 1개월 지정현황 </b>', x=0.5, font=dict(family='Courier New', size=10, color='black'))
   # legend=dict(orientation='v', xanchor='left', x=0.01, yanchor='bottom', y=0.9, font=dict(family='Courier New', size=14, color='black')),
   # height=500, width=750,
   # paper_bgcolor='#171b26', # 차트 바깥쪽 배경색
@@ -427,22 +427,25 @@ fig3 = px.line(dfff4, x='날짜', y='종가변동률_평균', color='시장경�
                )
 
 
-
 app.layout = html.Div([html.Div([
-    html.H1('시장경보조치 현황'),
+    html.H1('■ KRX 시장경보조치 현황', style={'color': 'black' }),
     html.Div([
         html.Div([
-            html.H3(datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 현황'),
+            html.H2('① ' + datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 현황',
+                    # style={'textAlign': 'center'}
+                    ),
             # html.Br(),
             dcc.Graph(
                 id='graph',
                 figure=fig2
             )
         ],
-        style={'padding': 10, 'flex': 1}),
+        style={'padding': 10, 'flex': 1,
+               'border' : '1px solid #ccc'
+               }),
 
         html.Div(children=[
-        html.H3(datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 list'),
+        html.H2('② ' + datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 list'),
         html.Br(),
         dcc.Dropdown(
         id = 'category',
@@ -455,52 +458,64 @@ app.layout = html.Div([html.Div([
         columns = [{"name": i, "id": i} for i in today_alert_list.columns],
         data=today_alert_list.to_dict('records'),    page_action='none',
         style_table={'overflowY': 'auto',
-                      'width': '350px',
-                     'height': '250px'
+                      'width': '450px',
+                     'height': '250px',
                       },
-        style_cell={ 'textAlign': 'center' })
-  ], style={'padding': 10, 'flex': 1}),
+        style_cell={ 'textAlign': 'center', 'color' : 'black' })
+  ], style={'padding': 10, 'flex': 1,
+            'border' : '1px solid #ccc'
+            }),
     ], style={'display': 'flex', 'flexDirection': 'row',
+              # 'border' : '1px solid #ccc'
               # 'backgroundColor': '#333333',
-              'minHeight': '100vh',  # Ensure full viewport height
+              # 'minHeight': '100vh',
+              # Ensure full viewport height
               # 'alignItems': 'center',  # Center content vertically
-              'padding': '20px',
+              # 'padding': '20px',
     }),
 
-    html.H1('시장경보 관련 통계'),
+    html.H1('■ 시장경보 관련 통계', style={'color': 'black' }),
     html.Div([
             html.Div([
-            html.H3('일별 시장경보 종목 현황'),
+            html.H2('① 일별 시장경보 지정 현황'),
             # html.Br(),
             dcc.Graph(
-                id='graph',
+                id='graph2',
                 figure=fig
               )
             ],
-            style={'padding': 10, 'flex': 1}),
+            style={'padding': 10, 'flex': 1,
+                   'border' : '1px solid #ccc'
+                   }),
             html.Div([
-            html.H3('시장경보 전/후 종가변동률'),
+            html.H2('② 시장경보 전/후 종가변동률'),
             # html.Br(),
             dcc.Graph(
-                id='graph',
+                id='graph3',
                 figure=fig3
               )
             ],
-            style={'padding': 10, 'flex': 1})],
-            
-            
+            style={'padding': 10, 'flex': 1,
+                   'border' : '1px solid #ccc'
+                   })],
+
+
             style={'display': 'flex', 'flexDirection': 'row',
                   # 'backgroundColor': '#333333',
-                  'minHeight': '100vh',  # Ensure full viewport height
+                  # 'minHeight': '100vh',  # Ensure full viewport height
                   # 'alignItems': 'center',  # Center content vertically
-                  'padding': '20px',
+                  'padding': '5px',
+                  #  'border' : '1px solid #ccc'
     })
   ])
 
 
 
-])
-
+],
+      style={'color': 'Black', 'fontSize': 14,
+            'backgroundColor': '#f3fff2',
+            #  'border' : '1px solid #ccc'
+      })
 
 
 @app.callback(Output("df_list", "data"), Input('category','value'))
