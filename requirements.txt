@@ -9,4 +9,6 @@ packaging
 pandas
 plotly==5.22.0
 requests == 2.32.3
+jupyter_dash
+
 gunicorn
