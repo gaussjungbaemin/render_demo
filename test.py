@@ -494,4 +494,5 @@ def temp(category):
   return filtered_data.to_dict('records')
 
 
-app.run(jupyter_mode="external")
+if __name__ == '__main__':
+    app.run_server(port=4444)
