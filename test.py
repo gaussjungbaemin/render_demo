@@ -117,7 +117,7 @@ gen_otp_data4={
 # 리퍼러란 링크를 통해서 각각의 웹사이트로 방문할 때 남는 흔적입니다. (로봇으로 인식을 하지 않게 하기 위함)
 # generate.cmd - Headers - Request Headers 내 Referer
 
-headers = {'Referer' : 'http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?'}
+headers={"User-Agent": "Mozilla/5.0"}
 
 
 otp1 = rq.post(gen_otp_url, gen_otp_data1, headers = headers).text
@@ -217,7 +217,7 @@ for i in range(filter_alert_list.shape[0]):
 
   gen_otp_url = "http://data.krx.co.kr/comm/fileDn/GenerateOTP/generate.cmd"
 
-  headers = {'Referer' : 'http://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201'}
+  headers={"User-Agent": "Mozilla/5.0"}
 
   otp1 = rq.post(gen_otp_url, gen_otp_data1, headers = headers).text
 
