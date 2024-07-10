@@ -28,7 +28,7 @@ print(os.getcwd())
 
 today = datetime.datetime.now().strftime("%Y%m%d")
 # today = datetime.datetime.now().strftime("%Y%m%d")
-two_year_ago = (datetime.datetime.now() + datetime.timedelta(days=-180)).strftime("%Y%m%d")
+two_year_ago = (datetime.datetime.now() + datetime.timedelta(days=-365)).strftime("%Y%m%d")
 
 
 #generate.cmd에 Request URL과 동일
@@ -120,7 +120,7 @@ gen_otp_data4={
 headers={"User-Agent": "Mozilla/5.0"}
 
 
-otp1 = rq.post(gen_otp_url, gen_otp_data1, headers = headers).text
+otp1 = rq.post(gen_otp_url, gen_otp_data1,headers=headers).text
 otp2 = rq.post(gen_otp_url, gen_otp_data2, headers = headers).text
 otp3 = rq.post(gen_otp_url, gen_otp_data3, headers = headers).text
 otp4 = rq.post(gen_otp_url, gen_otp_data4, headers = headers).text
@@ -326,10 +326,11 @@ final_result = pd.concat([tmp_df.iloc[:,:5],(tmp_df.iloc[:,5:].diff(axis=1)/tmp_
 
 
 
+import dash
+from dash import html
 
-app = Dash(__name__)
+app = dash.Dash(__name__)
 server = app.server
-
 
 
 app.title = "Market Alert Summary"
@@ -337,20 +338,30 @@ app.title = "Market Alert Summary"
 
 # bar chart용 데이터셋 만들기
 bar_data = alert_list[alert_list['지정일'].isin(list(alert_list['지정일'].unique())[:60])]
+
 df = bar_data.pivot_table(index='시장경보', columns='지정일', values='종목코드', aggfunc='count').fillna(0)
+
 tmp = ['투자주의종목','투자경고종목','투자위험종목']
+
 tmp2 = list(df.index)
+
 df3 = [x for x in tmp if not any(y == x for y in tmp2)]
+
 df2 = pd.DataFrame(index=df3, columns=df.columns).fillna(0)
+
 result = pd.concat([df,df2])
 
 bar_data2=result.loc[tmp]
+
 bar_data2 = bar_data2.stack().reset_index()
+
 bar_data2.columns=['시장경보', '지정일', '지정건수']
 
-fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#0317fc", "#fc0303", "#03fc56"],)
+fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#03fc56", "#0317fc", "#fc0303"],)
+
 fig.update_layout(
-  title=dict(text = ' <b> 최근 1개월 지정현황 </b>', x=0.5, font=dict(family='Courier New', size=10, color='black'))
+  title=dict(text = ' <b> 최근 2개월 시장경보 조치 Trend (일별) </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  # paper_bgcolor='#fbf7fc', # 차트 바깥쪽 배경색
   # legend=dict(orientation='v', xanchor='left', x=0.01, yanchor='bottom', y=0.9, font=dict(family='Courier New', size=14, color='black')),
   # height=500, width=750,
   # paper_bgcolor='#171b26', # 차트 바깥쪽 배경색
@@ -363,18 +374,75 @@ fig.update_layout(
 
 
 tmp_dff = pd.DataFrame([[0,0,0]],columns=['투자주의종목','투자경고종목','투자위험종목'])
+
 tmp_dff2 = pd.DataFrame(data=[today_alert_list['시장경보'].value_counts().values], columns=list(today_alert_list['시장경보'].value_counts().index))
+
 tmp_dff3 = pd.concat([tmp_dff,tmp_dff2])
 
-fig2 = go.Figure(data=[go.Pie(labels=list(tmp_dff3.sum().index), values=list(tmp_dff3.sum().values), hole=.4)])
+fig2 = go.Figure(data=[go.Pie(labels=list(tmp_dff3.sum().index), values=list(tmp_dff3.sum().values), hole=.4,  )])
+
+
+
 fig2.update_traces(hole=.3)
+
 fig2.update_layout(
-  # title=dict(text = ' <b> 금일 시장경보현황 </b>', x=0.5, font=dict(family='Courier New', size=20, color='black')),
+  title=dict(text = ' <b> 금일 시장경보 지정 종목 수 현황 </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  # title=dict(text = ' <b> 금일 시장경보현황 </b>', x=0.5, font=dict(family='Courier New', size=8, color='#fefaff')),
+  legend=dict(orientation='v',
+              itemsizing = 'trace',
+              font=dict(family='Courier New', size=12, color='black',
+                                          # xanchor='left', yanchor='top',
+                                        )
+            ),
+  height=460, width=460,
+  # paper_bgcolor='#fbf7fc', # 차트 바깥쪽 배경색
+  # plot_bgcolor='#171b26'
+)
+
+
+
+# 월별 시장경보조치 종목수
+
+alert_list['지정연월'] = alert_list['지정일'].str.slice(0, 7)
+
+df22 =alert_list.pivot_table(index='시장경보', columns='지정연월', aggfunc='count').fillna(0)
+df22.columns = df22.columns.droplevel()
+
+tmp = ['투자주의종목','투자경고종목','투자위험종목']
+
+tmp2 = list(df22.index)
+
+df3 = [x for x in tmp if not any(y == x for y in tmp2)]
+
+
+
+
+df2 = pd.DataFrame(index=df3, columns=df22.columns).fillna(0)
+
+result = pd.concat([df22,df2])
+
+bar_data3=result.loc[tmp]
+
+bar_data3 = bar_data3.stack().reset_index()
+
+bar_data3.columns=['시장경보', '지정연월', '지정건수']
+bar_data3 = bar_data3.sort_values(by=['지정연월'], ascending=True)
+bar_data3 = bar_data3.drop_duplicates()
+bar_data3 = bar_data3.iloc[3:]
+
+
+fig6 = px.line(bar_data3, x='지정연월', y='지정건수', color="시장경보",  text="지정건수", color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"},)
+
+fig6.update_layout(
+  title=dict(text = ' <b> 최근 1년간 시장경보 조치 Trend (월별) </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  # paper_bgcolor='#fbf7fc', # 차트 바깥쪽 배경색
   # legend=dict(orientation='v', xanchor='left', x=0.01, yanchor='bottom', y=0.9, font=dict(family='Courier New', size=14, color='black')),
   # height=500, width=750,
   # paper_bgcolor='#171b26', # 차트 바깥쪽 배경색
   # plot_bgcolor='#171b26'
 )
+
+
 
 
 # 시장별 주가변동률
@@ -385,106 +453,225 @@ dfff2 = dfff.dropna().groupby(['시장경보','시장구분']).mean()
 dfff3=dfff2.transpose()
 
 dfff4 = pd.DataFrame(dfff2.stack()).reset_index()
+
 dfff4.columns = ['시장경보','시장구분','날짜','종가변동률_평균']
 
 
+dfff5 = dfff4[dfff4['시장구분']=='KOSDAQ']
 
-df = px.data.gapminder().query("continent == 'Oceania'")
-fig3 = px.line(dfff4, x='날짜', y='종가변동률_평균', color='시장경보', facet_row='시장구분', markers=True,
+dfff6 = dfff4[dfff4['시장구분']=='KOSPI']
+
+# df = px.data.gapminder().query("continent == 'Oceania'")
+
+fig3 = px.line(dfff5, x='날짜', y='종가변동률_평균', color='시장경보',
+              #  facet_row='시장구분',
+               markers=True,
+               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"}
               #  title='시장경보 지정 전/후 일별 종가변동률'
                )
 
+fig3.update_layout(
+  title=dict(text = ' <b> (코스닥) 시장경보지정 전/후 일별 주가변동률 </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  # paper_bgcolor='#fbf7fc', # 차트 바깥쪽 배경색
+)
 
-app.layout = html.Div([html.Div([
-    html.H1('■ KRX 시장경보조치 현황', style={'color': 'black' }),
-    html.Div([
-        html.Div([
-            html.H2('① ' + datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 현황',
-                    # style={'textAlign': 'center'}
-                    ),
-            # html.Br(),
-            dcc.Graph(
-                id='graph',
-                figure=fig2
-            )
-        ],
-        style={'padding': 10, 'flex': 1,
-               'border' : '1px solid #ccc'
-               }),
 
-        html.Div(children=[
-        html.H2('② ' + datetime.datetime.now().strftime("%Y/%m/%d")+ ' 시장경보 종목 list'),
-        html.Br(),
-        dcc.Dropdown(
-        id = 'category',
-        options = [{ 'label':x, 'value':x} for x in ['투자주의종목','투자경고종목','투자위험종목']],
-        value = '투자경고종목', style={'width':'300px'}
+
+fig7 = px.line(dfff6, x='날짜', y='종가변동률_평균', color='시장경보',
+              #  facet_row='시장구분',
+               markers=True,
+               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"}
+              #  title='시장경보 지정 전/후 일별 종가변동률'
+               
+               )
+
+fig7.update_layout(
+  title=dict(text = ' <b> (코스피) 시장경보지정 전/후 일별 주가변동률 </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  # paper_bgcolor='#fbf7fc', # 차트 바깥쪽 배경색
+)
+
+
+
+#####################################################################################################################################
+
+
+app.layout = html.Div([
+
+        html.Div(
+            style={
+                # 'width': '20%',  # TEST2 공간 너비를 20%로 설정
+                'height': '13vh',
+                'display': 'flex',
+                'flex-direction': 'column',
+                # 'align-items': 'center',
+                'backgroundColor' : '#3b28c9',
+                'border-bottom' : '4px solid #a5a4b0',
+
+            },
+
+            children=[
+                html.H1('Market Alert Status Board', style={'color': 'white', "font-weight": "bold", "font-size": 43, "margin-left": 20}),
+                # html.Hr(),
+                # style={
+                #     # 'width': '20%',  # TEST2 공간 너비를 20%로 설정
+                #     # 'height': '5%',
+                #     # 'display': 'flex',
+                #     # 'flex-direction': 'column',
+                #     # 'align-items': 'center',
+                #     'backgroundColor' : 'yellow'
+                # },
+            ]
         ),
-        html.Br(),
-        dash_table.DataTable(
-        id='df_list',
-        columns = [{"name": i, "id": i} for i in today_alert_list.columns],
-        data=today_alert_list.to_dict('records'),    page_action='none',
-        style_table={'overflowY': 'auto',
-                      'width': '450px',
-                     'height': '250px',
-                      },
-        style_cell={ 'textAlign': 'center', 'color' : 'black' })
-  ], style={'padding': 10, 'flex': 1,
-            'border' : '1px solid #ccc'
-            }),
-    ], style={'display': 'flex', 'flexDirection': 'row',
-              # 'border' : '1px solid #ccc'
-              # 'backgroundColor': '#333333',
-              # 'minHeight': '100vh',
-              # Ensure full viewport height
-              # 'alignItems': 'center',  # Center content vertically
-              # 'padding': '20px',
-    }),
 
-    html.H1('■ 시장경보 관련 통계', style={'color': 'black' }),
-    html.Div([
-            html.Div([
-            html.H2('① 일별 시장경보 지정 현황'),
-            # html.Br(),
-            dcc.Graph(
-                id='graph2',
-                figure=fig
-              )
-            ],
-            style={'padding': 10, 'flex': 1,
-                   'border' : '1px solid #ccc'
-                   }),
-            html.Div([
-            html.H2('② 시장경보 전/후 종가변동률'),
-            # html.Br(),
-            dcc.Graph(
-                id='graph3',
-                figure=fig3
-              )
-            ],
-            style={'padding': 10, 'flex': 1,
-                   'border' : '1px solid #ccc'
-                   })],
+        html.Div(
+
+            html.Div(
+
+                    children=[
+                        html.Div(
+                            style={
+                                'flex-basis': '0',
+                                'flex-grow': 1,
+                                'min-width': '33.33%',
+                                'max-width': '33.33%',
+                                # 'width': '33.33%',
+                                'border-right' : '1px solid #a5a4b0',
+                            },
+                            children=[
+                                html.H3('Ⅰ '+datetime.datetime.now().strftime("%Y.%m.%d")+' 시장경보 현황', style={'color': 'black', "font-weight": "bold", "font-size": 19 , "margin-left": 10}),
+                                html.Br(),
+                                dcc.Graph(
+                                    id='graph',
+
+                                    # style={'margin-top': 0},
+                                    figure=fig2
+                                ),
+
+                                html.H3('※ 시장경보종목 List', style={'color': 'black', "font-weight": "bold", "font-size": 16 , "margin-left": 40}),
+                                dcc.Dropdown(
+                                        id = 'category',
+                                        options = [{ 'label':x, 'value':x} for x in ['투자주의종목','투자경고종목','투자위험종목']],
+                                        value = '투자경고종목',
+                                        style={'width':'400px', "font-size": 11, 'margin' : 'auto'},
+                                        
+                                ),
+                                html.Br(),
+                                dash_table.DataTable(
+                                              id='df_list',
+
+                                              columns = [{"name": i, "id": i} for i in today_alert_list.columns],
+
+                                              data=today_alert_list.to_dict('records'),
+
+                                              page_action='none',
+
+                                              style_table={'overflowY': 'auto',
+                                                            'width': '400px',
+                                                          'height': '600px',
+                                                           'margin' : 'auto'
+                                              },
+
+                                              style_cell={ 'textAlign': 'center', 'color' : 'black', "font-size": 11, 'border': '1px solid gray'},
+
+                                              # style_header={
+                                              #             'backgroundColor': 'white',
+                                              #             'fontWeight': 'bold'
+                                              #               },
+
+                                              style_header={
+                                                            # 'backgroundColor': 'rgb(30, 30, 30)',
+                                                            'backgroundColor': '#e9e1f7',
+                                                            'color': 'black'
+                                              },
+
+                                              style_data={
+                                                            # 'backgroundColor': 'rgb(50, 50, 50)',
+                                                            'backgroundColor': '#fdfcff',
+                                                            'color': 'black'
+                                              },
+                                  )
+
+                            ]
+                        ),
+                        html.Div(
+                            style={
+                                'flex-basis': '0',
+                                'flex-grow': 1,
+                                'min-width': '33.33%',
+                                'max-width': '33.33%',
+                                'border-right' : '1px solid #a5a4b0',
+                                # 'padding' : 5
+                            },
+                            children=[
+                                html.H3('Ⅱ '+'시장경보 조치 Trend', style={'color': 'black', "font-weight": "bold", "font-size": 19 , "margin-left": 10}),
+                                html.H3('① 일별 시장경보 조치 현황', style={'color': 'black', "font-weight": "bold", "font-size": 15, "margin-left": 20}),
+
+                                # html.Br(),
+
+                                dcc.Graph(
+                                    id='graph2',
+                                    figure=fig
+                                ),
+
+                                html.H3('② 월간 시장경보 조치 현황', style={'color': 'black', "font-weight": "bold", "font-size": 15, "margin-left": 20}),
+                                dcc.Graph(
+                                    id='graph6',
+                                    figure=fig6
+                                )
+
+                              ],         # (7)
+
+                        ),
+
+                        html.Div(
+                            style={
+                                'flex-basis': '0',
+                                'flex-grow': 1,
+                                'min-width': '33.33%',
+                                'max-width': '33.33%',
+                            },
+                            children=[
+                                html.H3('Ⅲ 시장경보 전/후 종가변동률', style={'color': 'black', "font-weight": "bold", "font-size": 19, "margin-left": 10 }),
+                                # html.Br(),
+                                html.H3('① KOSDAQ 시장', style={'color': 'black', "font-weight": "bold", "font-size": 15, "margin-left": 20}),
+                                dcc.Graph(
+                                    id='graph3',
+                                    figure=fig3
+                                ),
+
+                                html.H3('② KOSPI 시장', style={'color': 'black', "font-weight": "bold", "font-size": 15, "margin-left": 20}),
+                                dcc.Graph(
+                                    id='graph7',
+                                    figure=fig7
+                                )
+                            ]
+
+                      )
+                            ],
+                    style={
+                          'display': 'flex',
+                          'flex-direction': 'row',
+                          # 'padding' : '5px',
+                          'flex' :1,
+                          # 'border' : '4px solid #a5a4b0',
+                    },
+            ),
+            style={
+                    # 'width': '100%',  # TEST2 공간 너비를 20%로 설정
+                    'height': '100%',
+                    # 'display': 'flex',
+                    # 'flex-direction': 'row',
+                    'backgroundColor' : '#fbf7fc',
+                    # 'padding' : '5px',
+                    # 'flex' :1,
+                    # 'border' : '4px solid #a5a4b0',
+                  },
+
+        ),
 
 
-            style={'display': 'flex', 'flexDirection': 'row',
-                  # 'backgroundColor': '#333333',
-                  # 'minHeight': '100vh',  # Ensure full viewport height
-                  # 'alignItems': 'center',  # Center content vertically
-                  'padding': '5px',
-                  #  'border' : '1px solid #ccc'
-    })
-  ])
 
-
-
-],
-      style={'color': 'Black', 'fontSize': 14,
-            'backgroundColor': '#f3fff2',
-            #  'border' : '1px solid #ccc'
-      })
-
+])
 
 @app.callback(Output("df_list", "data"), Input('category','value'))
 def temp(category):
@@ -492,7 +679,6 @@ def temp(category):
   filtered_data = today_alert_list[today_alert_list['시장경보']==category]
 
   return filtered_data.to_dict('records')
-
 
 if __name__ == '__main__':
     app.run_server(port=4444)
