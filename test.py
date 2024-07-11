@@ -355,9 +355,9 @@ bar_data2=result.loc[tmp]
 
 bar_data2 = bar_data2.stack().reset_index()
 
-bar_data2.columns=['시장경보', '지정일', '지정건수']
+bar_data2.columns=['시장경보', '지정일', '지정 종목 수']
 
-fig = px.bar(bar_data2, x='지정일', y='지정건수', color="시장경보",  text="지정건수", color_discrete_sequence=["#03fc56", "#0317fc", "#fc0303"],)
+fig = px.bar(bar_data2, x='지정일', y='지정 종목 수', color="시장경보",  text="지정 종목 수", color_discrete_sequence=["#03fc56", "#0317fc", "#fc0303"],)
 
 fig.update_layout(
   title=dict(text = ' <b> 최근 2개월 Trend (일별) </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
@@ -391,7 +391,7 @@ fig2 = px.pie(tmp_dff4, values='지정 종목 수', names = '시장경보', colo
 fig2.update_traces(hole=.3)
 
 fig2.update_layout(
-  title=dict(text = ' <b> 금일 시장경보 지정 종목 수 현황 </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
+  title=dict(text = ' <b> 금일 시장경보종목 현황 </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
   legend=dict(orientation='v',
               itemsizing = 'trace',
               font=dict(family='Courier New', size=12, color='black',
@@ -430,13 +430,15 @@ bar_data3=result.loc[tmp]
 
 bar_data3 = bar_data3.stack().reset_index()
 
-bar_data3.columns=['시장경보', '지정연월', '지정건수']
+bar_data3.columns=['시장경보', '지정연월', '지정 종목 수']
 bar_data3 = bar_data3.sort_values(by=['지정연월'], ascending=True)
 bar_data3 = bar_data3.drop_duplicates()
 bar_data3 = bar_data3.iloc[3:]
 
 
-fig6 = px.line(bar_data3, x='지정연월', y='지정건수', color="시장경보",  text="지정건수", color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"},)
+fig6 = px.line(bar_data3, x='지정연월', y='지정 종목 수', color="시장경보",  text="지정 종목 수", color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"},
+              #  line_shape='spline'
+               )
 
 fig6.update_layout(
   title=dict(text = ' <b> 최근 1년 Trend (월별) </b>', x=0.5, font=dict(family='Courier New', size=13, color='black')),
@@ -471,8 +473,9 @@ dfff6 = dfff4[dfff4['시장구분']=='KOSPI']
 fig3 = px.line(dfff5, x='날짜', y='종가변동률_평균', color='시장경보',
               #  facet_row='시장구분',
                markers=True,
-               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"}
-              #  title='시장경보 지정 전/후 일별 종가변동률'
+               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"},
+              #  title='시장경보 지정 전/후 일별 종가변동률',
+              #  line_shape='spline'
                )
 
 fig3.update_layout(
@@ -485,8 +488,9 @@ fig3.update_layout(
 fig7 = px.line(dfff6, x='날짜', y='종가변동률_평균', color='시장경보',
               #  facet_row='시장구분',
                markers=True,
-               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"}
+               color_discrete_map ={'투자경고종목' : "#0317fc", "투자위험종목":"#fc0303", "투자주의종목" : "#03fc56"},
               #  title='시장경보 지정 전/후 일별 종가변동률'
+              #  line_shape='spline'
 
                )
 
@@ -543,7 +547,7 @@ app.layout = html.Div([
                                 'border-right' : '1px solid #a5a4b0',
                             },
                             children=[
-                                html.H3('Ⅰ '+datetime.datetime.now().strftime("%Y.%m.%d")+' 시장경보 현황', style={'color': 'black', "font-weight": "bold", "font-size": 19 , "margin-left": 10}),
+                                html.H3('Ⅰ '+datetime.datetime.now().strftime("%Y.%m.%d")+' 시장경보종목 현황', style={'color': 'black', "font-weight": "bold", "font-size": 19 , "margin-left": 10}),
                                 html.Br(),
                                 dcc.Graph(
                                     id='graph',
@@ -557,7 +561,7 @@ app.layout = html.Div([
                                         id = 'category',
                                         options = [{ 'label':x, 'value':x} for x in ['투자주의종목','투자경고종목','투자위험종목']],
                                         value = '투자경고종목',
-                                        style={"font-size": 11, 'margin' : 'auto'
+                                        style={"font-size": 13, 'margin' : 'auto'
                                               # 'width':'400px', 
                                         },
 
@@ -596,7 +600,9 @@ app.layout = html.Div([
                                                             'backgroundColor': '#fdfcff',
                                                             'color': 'black'
                                               },
-                                  )
+                                  ),
+                                  html.H5('* 정보데이터시스템으로부터의 데이터 수신으로 ', style={"margin-bottom": 0, "margin-left": 10, "margin-top": 0}),
+                                  html.H5('  금일 현재가 및 등락률 딜레이 존재  ', style={"margin-top": 0, "margin-left": 23})
 
                             ]
                         ),
