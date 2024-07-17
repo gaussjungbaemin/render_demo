@@ -562,7 +562,7 @@ app.layout = html.Div([
                                         options = [{ 'label':x, 'value':x} for x in ['투자주의종목','투자경고종목','투자위험종목']],
                                         value = '투자경고종목',
                                         style={"font-size": 13, 'margin' : 'auto'
-                                              # 'width':'400px', 
+                                              # 'width':'400px',
                                         },
 
                                 ),
@@ -657,7 +657,8 @@ app.layout = html.Div([
                                     id='graph7',
                                     figure=fig7
                                 ),
-
+                                html.Button("Download Excel", id="btn_xlsx"),
+                                dcc.Download(id="download-dataframe-xlsx"),
                                 # html.Br(),
                                 html.H5('* 최근 1년내 경고/위험 지정 종목 中 ', style={"margin-bottom": 0, "margin-left": 10}),
                                 html.H5('  지정 후 15일 이상 매매거래 진행 종목 한정 ', style={"margin-top": 0, "margin-left": 23})
@@ -696,6 +697,17 @@ def temp(category):
   filtered_data = today_alert_list[today_alert_list['시장경보']==category]
 
   return filtered_data.to_dict('records')
+
+
+@callback(
+    Output("download-dataframe-xlsx", "data"),
+    Input("btn_xlsx", "n_clicks"),
+    prevent_initial_call=True,
+)
+def func(n_clicks):
+    return dcc.send_data_frame(final_result.to_excel, "Rawdata.xlsx", sheet_name="Sheet_name_1", index=False)
+
+
 
 if __name__ == '__main__':
     app.run_server(port=4444)
